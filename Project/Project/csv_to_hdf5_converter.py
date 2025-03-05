@@ -1,6 +1,10 @@
 import os
 import pandas as pd
+from pandasgui import show
 import h5py
+import numpy as np
+
+import dtale
 
 # Define paths
 raw_data_folder = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project"  # Folder containing raw CSV files
@@ -44,3 +48,7 @@ with h5py.File(hdf5_path, "w") as hdf5:
             print(f"Stored {file} in {dataset_name}")
 
 print(f"Conversion complete. HDF5 file created at: {hdf5_path}")
+
+#easier way to look at data, ensure pandasgui is installed
+dataset = pd.read_csv("C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\Project\\raw_data\\CharlotteJumping.csv")
+gui = show(dataset)
