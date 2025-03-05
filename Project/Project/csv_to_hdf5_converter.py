@@ -3,7 +3,7 @@ import pandas as pd
 import h5py
 
 # Define paths
-raw_data_folder = "raw_data"  # Folder containing raw CSV files
+raw_data_folder = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project"  # Folder containing raw CSV files
 dataset_folder = "dataset"  # Folder where HDF5 will be stored
 hdf5_path = os.path.join(dataset_folder, "dataset.hdf5")  # Path to HDF5 file
 
