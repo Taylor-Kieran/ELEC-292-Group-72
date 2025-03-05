@@ -3,8 +3,7 @@ import pandas as pd
 from pandasgui import show
 import h5py
 import numpy as np
-
-import dtale
+import matplotlib.pyplot as plt
 
 # Define paths
 raw_data_folder = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project"  # Folder containing raw CSV files
@@ -51,13 +50,13 @@ print(f"Conversion complete. HDF5 file created at: {hdf5_path}")
 
 #easier way to look at data, ensure pandasgui is installed
 dataset = pd.read_csv("C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\Project\\raw_data\\CharlotteJumping.csv")
-#gui = show(dataset)
 
 window_size = 5
 acceleration_columns = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)', 'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
+moving_avg_dataset = pd.DataFrame()
 
 for column in acceleration_columns:
     #create a new column for the moving average of each acceleration type
-    dataset[f'{column}_Moving_Avg'] = dataset[column].rolling(window=window_size).mean()
-
-gui = show(dataset)
+    moving_avg_dataset[f'{column}_Moving_Avg'] = dataset[column].rolling(window=window_size).mean()
+#show values for both raw and new moving average data
+gui = show(moving_avg_dataset)
