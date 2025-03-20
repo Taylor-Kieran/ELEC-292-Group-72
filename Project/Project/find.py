@@ -1,6 +1,6 @@
 
 #this is for finding out the groups present in dataset hdf5
-import h5py
+"""import h5py
 import os
 # Define the HDF5 file path
 project_folder = os.path.dirname(os.path.abspath(__file__))  # Get script's directory
@@ -12,7 +12,7 @@ with h5py.File(hdf5_path, "r") as hdf5:
         if isinstance(obj, h5py.Group):
             print(name)
 
-    hdf5.visititems(list_groups)
+    hdf5.visititems(list_groups)"""
 
 
 
