@@ -13,6 +13,10 @@ hdf5_path = os.path.join(dataset_folder, "dataset.hdf5")  # Path to HDF5 file
 # Ensure dataset folder exists
 os.makedirs(dataset_folder, exist_ok=True)
 
+# Debug: Check if raw_data exists
+if not os.path.exists(raw_data_folder):
+    raise FileNotFoundError(f"Folder '{raw_data_folder}' not found in {os.getcwd()}")
+
 # Create HDF5 file
 with h5py.File(hdf5_path, "w") as hdf5:
     # Create groups in HDF5
@@ -34,17 +38,14 @@ with h5py.File(hdf5_path, "w") as hdf5:
             else:
                 activity = "unknown"
 
-            # Create dataset path inside 'raw' group
-            dataset_name = f"raw/{activity}/{file.replace('.csv', '')}"  # Store under 'walking' or 'running'
-
             # Ensure group exists for activity type
-            if activity not in raw_group:
-                raw_group.create_group(activity)
+            if activity not in hdf5["raw"]:
+                hdf5["raw"].create_group(activity)
 
             # Store CSV data in HDF5 file
-            raw_group[activity].create_dataset(file.replace(".csv", ""), data=data.to_numpy())
+            hdf5["raw"][activity].create_dataset(file.replace(".csv", ""), data=data.to_numpy())
 
-            print(f"Stored {file} in {dataset_name}")
+            print(f"Stored {file} in /raw/{activity}/{file.replace('.csv', '')}")
 
 print(f"Conversion complete. HDF5 file created at: {hdf5_path}")
 

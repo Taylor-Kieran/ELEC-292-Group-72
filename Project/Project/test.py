@@ -1,29 +1,38 @@
-import h5py
+import os
 import pandas as pd
-import matplotlib.pyplot as plt
+import h5py
 
-# Load the HDF5 file
-hdf5_path = "dataset/dataset.hdf5"
+# Get absolute paths relative to the script's location
+project_folder = os.path.dirname(os.path.abspath(__file__))  # Path to project folder
+raw_data_folder = os.path.join(project_folder, "raw_data")  # Folder containing raw CSV files
+dataset_folder = os.path.join(project_folder, "dataset")  # Folder where dataset.hdf5 is stored
+hdf5_path = os.path.join(dataset_folder, "dataset.hdf5")  # Path to HDF5 file
 
-with h5py.File(hdf5_path, "r") as hdf5:
-    activity = "raw/walking/Fateen_Walking_FrontPocket"  # Modify this to change datasets
+# Only create dataset folder if it does not exist
+if not os.path.exists(dataset_folder):
+    os.makedirs(dataset_folder)  # Create dataset folder only if missing
 
-    if activity in hdf5:
-        data = hdf5[activity][()]
+# Open HDF5 file in append mode
+with h5py.File(hdf5_path, "a") as hdf5:
+    # Ensure 'raw' group exists
+    raw_group = hdf5.require_group("raw")  # Creates if missing, else uses existing
 
-        # Convert to DataFrame
-        df = pd.DataFrame(data, columns=["timestamp", "x", "y", "z", "absolute_acceleration"])
+    # Loop through CSV files in raw_data folder and store them in 'raw' group
+    for file in os.listdir(raw_data_folder):
+        if file.endswith(".csv"):
+            file_path = os.path.join(raw_data_folder, file)
+            data = pd.read_csv(file_path)
 
-        # Plot x-axis acceleration over time
-        plt.figure(figsize=(10, 4))
-        plt.plot(df["timestamp"], df["x"], label="X-axis Acceleration", color="blue")
-        plt.xlabel("Timestamp")
-        plt.ylabel("X Acceleration")
-        plt.title("X-axis Acceleration Over Time")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+            dataset_name = file.replace(".csv", "")  # Name of dataset in HDF5
 
-    else:
-        print(f"Dataset {activity} not found in HDF5 file.")
+            # Check if dataset already exists in 'raw'
+            if dataset_name in raw_group:
+                print(f"Skipping {file}, already exists in /raw/")
+                continue  # Skip if already present
 
+            # Store CSV data in HDF5 file inside 'raw' group
+            raw_group.create_dataset(dataset_name, data=data.to_numpy())
+
+            print(f"Stored {file} in /raw/{dataset_name}")
+
+print(f"Update complete. HDF5 file updated at: {hdf5_path}")
