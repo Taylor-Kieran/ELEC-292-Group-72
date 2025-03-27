@@ -1,38 +1,49 @@
-import os
 import pandas as pd
-import h5py
+import numpy as np
 
-# Get absolute paths relative to the script's location
-project_folder = os.path.dirname(os.path.abspath(__file__))  # Path to project folder
-raw_data_folder = os.path.join(project_folder, "raw_data")  # Folder containing raw CSV files
-dataset_folder = os.path.join(project_folder, "dataset")  # Folder where dataset.hdf5 is stored
-hdf5_path = os.path.join(dataset_folder, "dataset.hdf5")  # Path to HDF5 file
+# Define columns
+columns = [
+    # X-axis (10 features)
+    'x_mean', 'x_std', 'x_max', 'x_min', 'x_range', 
+    'x_median', 'x_rms', 'x_skew', 'x_kurtosis', 'x_zcr',
+    
+    # Y-axis (10 features)
+    'y_mean', 'y_std', 'y_max', 'y_min', 'y_range',
+    'y_median', 'y_rms', 'y_skew', 'y_kurtosis', 'y_zcr',
+    
+    # Z-axis (10 features)
+    'z_mean', 'z_std', 'z_max', 'z_min', 'z_range',
+    'z_median', 'z_rms', 'z_skew', 'z_kurtosis', 'z_zcr',
+    
+    # Absolute acceleration (10 features)
+    'abs_mean', 'abs_std', 'abs_max', 'abs_min', 'abs_range',
+    'abs_median', 'abs_rms', 'abs_skew', 'abs_kurtosis', 'abs_zcr',
+    
+    # Label
+    'label'
+]
 
-# Only create dataset folder if it does not exist
-if not os.path.exists(dataset_folder):
-    os.makedirs(dataset_folder)  # Create dataset folder only if missing
+# Create empty DataFrame
+extracted_features = pd.DataFrame(columns=columns)
 
-# Open HDF5 file in append mode
-with h5py.File(hdf5_path, "a") as hdf5:
-    # Ensure 'raw' group exists
-    raw_group = hdf5.require_group("raw")  # Creates if missing, else uses existing
+# Generate and add 3 random rows of data
+for _ in range(3):
+    # Random values for features (between 0 and 2 for demonstration)
+    random_features = np.round(np.random.uniform(0, 2, 40), 3)
+    
+    # Random label (0 or 1)
+    random_label = np.random.randint(0, 2)
+    
+    # Combine into a row
+    row_data = np.append(random_features, random_label)
+    
+    # Add to DataFrame
+    extracted_features.loc[len(extracted_features)] = row_data
 
-    # Loop through CSV files in raw_data folder and store them in 'raw' group
-    for file in os.listdir(raw_data_folder):
-        if file.endswith(".csv"):
-            file_path = os.path.join(raw_data_folder, file)
-            data = pd.read_csv(file_path)
+# Print the DataFrame
+print("DataFrame with random values:")
+print(extracted_features)
 
-            dataset_name = file.replace(".csv", "")  # Name of dataset in HDF5
-
-            # Check if dataset already exists in 'raw'
-            if dataset_name in raw_group:
-                print(f"Skipping {file}, already exists in /raw/")
-                continue  # Skip if already present
-
-            # Store CSV data in HDF5 file inside 'raw' group
-            raw_group.create_dataset(dataset_name, data=data.to_numpy())
-
-            print(f"Stored {file} in /raw/{dataset_name}")
-
-print(f"Update complete. HDF5 file updated at: {hdf5_path}")
+# Print transposed for better readability of all columns
+print("\nTransposed view (showing all columns):")
+print(extracted_features.T)
