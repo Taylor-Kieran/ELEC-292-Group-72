@@ -34,7 +34,7 @@ with h5py.File(hdf5_path, "r") as hdf5:
 
         
 #this if for finding out the files present in pre_processed group of the hdf5
-"""import h5py
+import h5py
 import os
 
 # Define the HDF5 file path
@@ -50,7 +50,7 @@ with h5py.File(hdf5_path, "r") as hdf5:
         else:
             print("pre_processed is empty")
     else:
-        print("pre_processed group does not exist")"""
+        print("pre_processed group does not exist")
 
         
 
