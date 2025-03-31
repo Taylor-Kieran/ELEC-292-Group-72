@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
-import joblib  # For loading the trained model
+import joblib
+
+
 
 # Load the trained model
 model_path = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72//trained_model.pkl"
@@ -8,7 +10,7 @@ clf = joblib.load(model_path)
 print(f"Model loaded from {model_path}")
 
 # Load the new unlabeled dataset
-unlabeled_test_set_path = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72//unlabeled_test.csv"
+unlabeled_test_set_path = "file that app put file in"
 unlabeled_test_set = pd.read_csv(unlabeled_test_set_path)
 
 # Apply the same feature scaling
