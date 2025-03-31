@@ -26,7 +26,18 @@ y = df["label"].values  # Labels (0 = walking, 1 = jumping)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0)
 
 # Save train and test
+with h5py.File(HDF5_PATH, "a") as f:
+    # Ensure the "segmented" group exists (or create it if it doesn't)
+    if "segmented" not in f:
+        segmented_group = f.create_group("segmented")
+    else:
+        segmented_group = f["segmented"]
 
+    # Save the train/test datasets inside the "segmented" group
+    segmented_group.create_dataset("X_train", data=X_train)
+    segmented_group.create_dataset("X_test", data=X_test)
+    segmented_group.create_dataset("y_train", data=y_train)
+    segmented_group.create_dataset("y_test", data=y_test)
 
 # Define Standard Scaler to normalize inputs
 scaler = StandardScaler()
