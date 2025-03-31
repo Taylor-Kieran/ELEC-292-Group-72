@@ -96,6 +96,9 @@ app = ctk.CTk()
 app.title("Walking vs Jumping Classifier")
 app.geometry("800x600")
 
+title_label = ctk.CTkLabel(app, text = "Walking or Jumping", font = ctk.CTkFont(size = 24, weight = "bold"))
+title_label.pack(pady=10)
+
 #store CSV data
 data = None
 
