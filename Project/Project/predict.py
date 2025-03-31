@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 SAMPLING_RATE = 100  # Hz
 WINDOW_SECONDS = 5
 WINDOW_SIZE = SAMPLING_RATE * WINDOW_SECONDS
-
+file_path = "C:/Users/Kieran Taylor/Documents/GitHub/ELEC-292-Group-72/Project/Project/FinalRawData.csv"
 
 def load_csv(file_path):
     """Load CSV file and return as DataFrame."""
@@ -86,8 +86,6 @@ def extract_features(df):
     return extracted_features
 
 
-file_path = "input"
-
 def predict(file_path):
     
     df = load_csv(file_path)
@@ -121,10 +119,11 @@ def predict(file_path):
         "Jumping_Probability": predicted_probs  # Confidence score
     })
 
-    output_csv_path = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72//predictions.csv"
+    print("WE made it")
+    output_csv_path = "C:/Users/Kieran Taylor/Documents/GitHub/ELEC-292-Group-72/Project/Project/Predictions/pred.csv"
     output_df.to_csv(output_csv_path, index=False)
     print(f"Predictions saved to {output_csv_path}")
 
-
+predict(file_path)
 
 
