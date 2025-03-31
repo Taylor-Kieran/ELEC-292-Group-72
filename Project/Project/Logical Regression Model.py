@@ -8,20 +8,21 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, recall_score, auc
+import pandas as pd
 
-file_path = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72/.Project//Project//dataset//dataset.hdf5"
 
-# Load both datasets
-with h5py.File("dataset.hdf5", "r") as file:
+import io
+import h5py
 
-    ls = list(file.keys())
+HDF5_PATH = "Project/Project/dataset/dataset.hdf5"
 
-    print("Available datasets:", list(file.keys()))
+with h5py.File(HDF5_PATH, "r") as f:
+    csv_data = f["segmented/extracted.csv"][()].decode("utf-8")  # Decode bytes to string
+    df = pd.read_csv(io.StringIO(csv_data))  # Convert to DataFrame
 
-    # Read a dataset (replace "dataset_name" with the actual name)
-    segmented_data = file["segmented/extracted.csv"][:]
-    print(segmented_data)
-    print("Data shape:", segmented_data.shape)
+
+
+
 
 #
 # # Extract features (all columns except the label)
