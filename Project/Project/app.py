@@ -73,7 +73,7 @@ def classifier_plot(file_path):
         ax.set_title('Predicted Activity Over Time')
         ax.grid(True)
 
-        canvas = FigureCanvasTkAgg(fig, master=tree_frame)
+        canvas = FigureCanvasTkAgg(fig, master=main_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True)
 
