@@ -19,9 +19,11 @@ app = ctk.CTk()
 app.title("Walking vs Jumping Classifier")
 app.geometry("800x600")
 
-title_label = ctk.CTkLabel(app, text = "Walking or Jumping", font = ctk.CTkFont(size = 24, weight = "bold"))
+title_label = ctk.CTkLabel(app, text = "Walking versus Jumping Classifier", font = ctk.CTkFont(size = 24, weight = "bold"))
 title_label.pack(pady=10)
 
+intro_label = ctk.CTkLabel(app, text="Upload your csv file containing your accelerometer data to classify it", font=ctk.CTkFont(size=14))
+intro_label.pack(pady=(0,10))
 #store CSV data
 trained_file = None
 
@@ -92,18 +94,18 @@ def return_csv():
         status_label.configure(text="No data to save.")
 
 #button to upload csv
-open_button = ctk.CTkButton(app, text="Open CSV File", command=open_csv)
+open_button = ctk.CTkButton(app, text="Upload CSV", command=open_csv)
 open_button.pack(padx=20, pady=10)
 
 #button to save classified csv
-save_button = ctk.CTkButton(app, text="Save Classified CSV File", command = return_csv)
+save_button = ctk.CTkButton(app, text="Save Classified CSV", command = return_csv)
 save_button.pack(padx=20, pady=10)
 
 #for displaying the plot
 center_frame = ctk.CTkFrame(app)
 center_frame.pack(padx=20, pady=20, fill="both", expand=True)
-tree_frame = ctk.CTkFrame(center_frame)
-tree_frame.pack(fill="both", expand=True, pady=20)
+main_frame = ctk.CTkFrame(center_frame)
+main_frame.pack(fill="both", expand=True, pady=20)
 
 #status messages !
 status_label = ctk.CTkLabel(app, text="", anchor="w")
