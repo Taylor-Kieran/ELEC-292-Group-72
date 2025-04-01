@@ -11,7 +11,7 @@ from sklearn.metrics import roc_curve, confusion_matrix, ConfusionMatrixDisplay,
 import io
 import h5py
 
-HDF5_PATH = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72//Project//Project//dataset//dataset.hdf5"
+HDF5_PATH = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project\\dataset\\dataset.hdf5"
 
 with h5py.File(HDF5_PATH, "r") as f:
     csv_data = f["segmented//extracted.csv"][()].decode("utf-8")  # Decode bytes to string
@@ -34,10 +34,10 @@ with h5py.File(HDF5_PATH, "a") as f:
         segmented_group = f["segmented"]
 
     # Save the train/test datasets inside the "segmented" group
-    segmented_group.create_dataset("X_train", data=X_train)
-    segmented_group.create_dataset("X_test", data=X_test)
-    segmented_group.create_dataset("y_train", data=y_train)
-    segmented_group.create_dataset("y_test", data=y_test)
+    for name, dataset in [("X_train", X_train),("X_test", X_test), ("y_train", y_train), ("y_test", y_test)]:
+        if name in segmented_group:
+            del segmented_group[name]
+        segmented_group.create_dataset(name, data=dataset)
 
 # Define Standard Scaler to normalize inputs
 scaler = StandardScaler()
@@ -50,7 +50,7 @@ clf = make_pipeline(StandardScaler(), l_reg)
 clf.fit(X_train, y_train)
 
 # Save model path
-model_path = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72//trained_model.pkl"
+model_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\trained_model.pkl"
 joblib.dump(clf, model_path)
 print(f"Model saved to {model_path}")
 
