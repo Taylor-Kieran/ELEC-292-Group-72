@@ -18,11 +18,11 @@ with h5py.File(HDF5_PATH, "r") as f:
     df = pd.read_csv(io.StringIO(csv_data))  # Convert to DataFrame
     print(df.head())
 
-# Extract features (all columns except the label)
+# Extract features
 X = df.drop(columns=["label"]).values  # Use all columns except "label" as features
 y = df["label"].values  # Labels (0 = walking, 1 = jumping)
 
-# assign 10% of the data to test set
+# assign 10% test 90% train 0% val
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0)
 
 # Save train and test
