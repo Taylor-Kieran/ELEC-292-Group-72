@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 SAMPLING_RATE = 100  # Hz
 WINDOW_SECONDS = 5
 WINDOW_SIZE = SAMPLING_RATE * WINDOW_SECONDS
-file_path = "C:/Users/Kieran Taylor/Documents/GitHub/ELEC-292-Group-72/Project/Project/FinalRawData.csv"
+#file_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project\\FinalRawData.csv"
 
 def load_csv(file_path):
     """Load CSV file and return as DataFrame."""
@@ -87,7 +87,7 @@ def extract_features(df):
 
 
 def predict(file_path):
-    
+    print(f"[DEBUG] predict() received file_path: {file_path}")
     df = load_csv(file_path)
 
     # Data Processing
@@ -98,7 +98,7 @@ def predict(file_path):
 
     # Prediction Model
     # Load the trained model
-    model_path = "C://Users//Kieran Taylor//Documents//GitHub//ELEC-292-Group-72//trained_model.pkl"
+    model_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\trained_model.pkl"
     clf = joblib.load(model_path)
     print(f"Model loaded from {model_path}")
 
@@ -119,11 +119,10 @@ def predict(file_path):
         "Jumping_Probability": predicted_probs  # Confidence score
     })
 
-    print("WE made it")
-    output_csv_path = "C:/Users/Kieran Taylor/Documents/GitHub/ELEC-292-Group-72/Project/Project/Predictions/pred.csv"
+    #print("WE made it")
+    output_csv_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project\\Predictions\\pred.csv"
     output_df.to_csv(output_csv_path, index=False)
-    print(f"Predictions saved to {output_csv_path}")
-
-predict(file_path)
+    #print(f"Predictions saved to {output_csv_path}")
+    return output_csv_path
 
 
