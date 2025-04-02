@@ -143,48 +143,38 @@ def feature_extraction(file_path):
                 new_row = extract_features_from_segment(segment)
                 
                 # Determine label based on filename
-                label = 0 if "Walking" in name else 1 if "Jumping" in name else -1
-                new_row['label'] = label  # Add the label to the features
+                if "Walking" in name or "Jumping" in name:
+                    label = 0 if "Walking" in name else 1
+                    new_row['label'] = label  # Add the label to the features
+
                 
                 # Append the extracted features for this segment to the list
                 extracted_features.append(new_row)
         # Convert the list of dictionaries to a DataFrame
         return pd.DataFrame(extracted_features)
 
-# Example usage
-
-file_path = "Project/Project/dataset/dataset.hdf5"
-# Extract features from the pre-processed data
-extracted_df = feature_extraction(file_path)
-
-
 
 # Normalize the feature data using Z-score normalization
-scaler = StandardScaler()
-features = extracted_df.iloc[:, :-1].values  # Extract all feature columns
-normalized_features = scaler.fit_transform(features)
-normalized_df = pd.DataFrame(normalized_features, columns=extracted_df.columns[:-1])
-normalized_df['label'] = extracted_df['label'].values  # Reattach labels
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+
+def normalize_features(extracted_df):
+    scaler = StandardScaler()
+    features = extracted_df.drop(columns=["label"], errors="ignore").values  # Drop 'label' if it exists
+    normalized_features = scaler.fit_transform(features)
+    
+    normalized_df = pd.DataFrame(normalized_features, columns=[col for col in extracted_df.columns if col != "label"])
+    
+    # Reattach label only if it was originally present
+    if "label" in extracted_df.columns:
+        normalized_df["label"] = extracted_df["label"].values
+
+    return normalized_df
 
 
 
-# Ensure the label column is integer type
-normalized_df["label"] = normalized_df["label"].astype(int)
 
 
-# Save the normalized features to the HDF5 file
-with h5py.File(file_path, "r+") as f:
-    # Create 'segmented' group if it doesn't exist
-    if "segmented" not in f:
-        segmented_group = f.create_group("segmented")
-    else:
-        segmented_group = f["segmented"]
 
-    # If "extracted" dataset already exists, delete it to avoid conflict
-    if "extracted" in segmented_group:
-        del segmented_group["extracted"]
 
-    # Save the normalized DataFrame as a NumPy array to the 'segmented' group
-    segmented_group.create_dataset("extracted", data=normalized_df.to_numpy())
 
-print("Feature extraction and normalization complete. Data saved in 'segmented/extracted' group.")

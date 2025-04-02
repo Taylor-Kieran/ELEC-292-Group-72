@@ -38,15 +38,4 @@ def process_hdf5(file_path):
         
     return processed_data
 
-# Example usage
-file_path = "Project/Project/dataset/dataset.hdf5"
-processed_data = process_hdf5(file_path)
 
-with h5py.File(file_path, "r+") as f:
-    preprocessed_group = f["pre-processed"]
-    for name, df in processed_data.items():
-        if name in preprocessed_group:
-            del preprocessed_group[name]  # Remove existing dataset if present
-        preprocessed_group.create_dataset(name, data=df.to_numpy())
-
-print("Pre-processing complete. Data saved in 'pre-processed' group.")
