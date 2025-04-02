@@ -71,4 +71,4 @@ def predict(file_path, MODEL_PATH, OUTPUT_CSV_PATH):
 
     return OUTPUT_CSV_PATH
 
-
+predict(csv_path, MODEL_PATH, OUTPUT_CSV_PATH)

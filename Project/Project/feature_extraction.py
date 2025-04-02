@@ -3,28 +3,10 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import skew, kurtosis
-from scipy.fft import fft
-
-def mad(x):
-    return np.mean(np.abs(x - np.mean(x)))
-
-# Zero Crossing Rate
-def zero_crossings(x):
-    return np.sum(np.diff(np.sign(x)) != 0)
 
 # Autocorrelation (lag=1)
 def autocorrelation(x):
     return np.corrcoef(x[:-1], x[1:])[0, 1]
-
-# Peak-to-Peak Amplitude
-def peak_to_peak(x):
-    return np.max(x) - np.min(x)
-
-# FFT (Frequency Domain Features)
-def fft_features(x):
-    fft_vals = fft(x)
-    magnitude = np.abs(fft_vals)
-    return np.mean(magnitude), np.std(magnitude), np.max(magnitude), np.min(magnitude)
 
 # Function to extract 10 features from a 5-second segment of acceleration data
 def extract_features_from_segment(data):
@@ -35,10 +17,6 @@ def extract_features_from_segment(data):
     # Function to calculate RMS
     def rms(values):
         return np.sqrt(np.mean(values**2))
-
-    # Function to calculate energy
-    def energy(values):
-        return np.sum(values**2)
 
     # Extract features (mean, std, max, min, range, median, rms, skewness, kurtosis, energy)
     return {
@@ -52,15 +30,7 @@ def extract_features_from_segment(data):
                 'x_rms': rms(x),
                 'x_skew': skew(x),
                 'x_kurtosis': kurtosis(x),
-                'x_energy': energy(x),
-                'x_mad': mad(x),  # Mean Absolute Deviation
-                'x_zcr': zero_crossings(x),  # Zero Crossing Rate
-                'x_autocorr': autocorrelation(x),  # Autocorrelation
-                'x_ptp': peak_to_peak(x),  # Peak to Peak Amplitude
-                'x_fft_mean': fft_features(x)[0],  # FFT Mean
-                'x_fft_std': fft_features(x)[1],  # FFT Standard Deviation
-                'x_fft_max': fft_features(x)[2],  # FFT Max
-                'x_fft_min': fft_features(x)[3],  # FFT Min
+                'x_autocorr': autocorrelation(x),  
 
                 # Y-axis features
                 'y_mean': np.mean(y),
@@ -72,16 +42,9 @@ def extract_features_from_segment(data):
                 'y_rms': rms(y),
                 'y_skew': skew(y),
                 'y_kurtosis': kurtosis(y),
-                'y_energy': energy(y),
-                'y_mad': mad(y),
-                'y_zcr': zero_crossings(y),
                 'y_autocorr': autocorrelation(y),
-                'y_ptp': peak_to_peak(y),
-                'y_fft_mean': fft_features(y)[0],
-                'y_fft_std': fft_features(y)[1],
-                'y_fft_max': fft_features(y)[2],
-                'y_fft_min': fft_features(y)[3],
-
+ 
+                
                 # Z-axis features
                 'z_mean': np.mean(z),
                 'z_std': np.std(z),
@@ -92,16 +55,9 @@ def extract_features_from_segment(data):
                 'z_rms': rms(z),
                 'z_skew': skew(z),
                 'z_kurtosis': kurtosis(z),
-                'z_energy': energy(z),
-                'z_mad': mad(z),
-                'z_zcr': zero_crossings(z),
                 'z_autocorr': autocorrelation(z),
-                'z_ptp': peak_to_peak(z),
-                'z_fft_mean': fft_features(z)[0],
-                'z_fft_std': fft_features(z)[1],
-                'z_fft_max': fft_features(z)[2],
-                'z_fft_min': fft_features(z)[3],
 
+                
                 # Absolute acceleration features
                 'abs_mean': np.mean(abs_accel),
                 'abs_std': np.std(abs_accel),
@@ -112,15 +68,8 @@ def extract_features_from_segment(data):
                 'abs_rms': rms(abs_accel),
                 'abs_skew': skew(abs_accel),
                 'abs_kurtosis': kurtosis(abs_accel),
-                'abs_energy': energy(abs_accel),
-                'abs_mad': mad(abs_accel),
-                'abs_zcr': zero_crossings(abs_accel),
                 'abs_autocorr': autocorrelation(abs_accel),
-                'abs_ptp': peak_to_peak(abs_accel),
-                'abs_fft_mean': fft_features(abs_accel)[0],
-                'abs_fft_std': fft_features(abs_accel)[1],
-                'abs_fft_max': fft_features(abs_accel)[2],
-                'abs_fft_min': fft_features(abs_accel)[3],
+                
     }
 
 # Function to extract features from pre-processed data
