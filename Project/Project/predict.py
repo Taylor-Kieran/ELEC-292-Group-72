@@ -34,7 +34,7 @@ def feature_extraction(df):
 
 
 
-def predict(file_path):
+def predict(file_path, MODEL_PATH, OUTPUT_CSV_PATH):
     print(f"[DEBUG] Processing HDF5 file: {file_path}")
     
     df = pd.read_csv(file_path)
@@ -71,4 +71,4 @@ def predict(file_path):
 
     return OUTPUT_CSV_PATH
 
-predict(csv_path)
+
