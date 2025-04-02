@@ -4,106 +4,229 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from scipy.stats import skew, kurtosis
+from scipy.fft import fft
+
+
+
+def moving_average(data, window_size=50):
+    return np.convolve(data, np.ones(window_size)/window_size, mode='same')
+
+def process_dataset(data):
+    # Convert to DataFrame for easier processing
+    df = pd.DataFrame(data)
+    
+    # Fill missing values using forward fill, then backward fill
+    df.ffill(inplace=True)
+    df.bfill(inplace=True)
+    
+    # Apply moving average filter to all columns except the first (time column)
+    for col in df.columns[1:]:  # Skip time column (assuming column 0 is time)
+        df[col] = moving_average(df[col])
+    
+    return df
+
+
+
+
+
+def mad(x):
+    return np.mean(np.abs(x - np.mean(x)))
+
+# Zero Crossing Rate
+def zero_crossings(x):
+    return np.sum(np.diff(np.sign(x)) != 0)
+
+# Autocorrelation (lag=1)
+def autocorrelation(x):
+    return np.corrcoef(x[:-1], x[1:])[0, 1]
+
+# Peak-to-Peak Amplitude
+def peak_to_peak(x):
+    return np.max(x) - np.min(x)
+
+# FFT (Frequency Domain Features)
+def fft_features(x):
+    fft_vals = fft(x)
+    magnitude = np.abs(fft_vals)
+    return np.mean(magnitude), np.std(magnitude), np.max(magnitude), np.min(magnitude)
+
+# Function to extract 10 features from a 5-second segment of acceleration data
+def extract_features_from_segment(data):
+    """Extract features from a 5-second segment of acceleration data"""
+    # Extract x, y, z, and absolute acceleration
+    x, y, z, abs_accel = data[:, 0], data[:, 1], data[:, 2], data[:, 3]
+
+
+    # Function to calculate RMS
+    def rms(values):
+        return np.sqrt(np.mean(values**2))
+
+    # Function to calculate energy
+    def energy(values):
+        return np.sum(values**2)
+
+    # Extract features (mean, std, max, min, range, median, rms, skewness, kurtosis, energy)
+    return {
+        # X-axis features
+        'x_mean': np.mean(x),
+                'x_std': np.std(x),
+                'x_max': np.max(x),
+                'x_min': np.min(x),
+                'x_range': np.ptp(x),
+                'x_median': np.median(x),
+                'x_rms': rms(x),
+                'x_skew': skew(x),
+                'x_kurtosis': kurtosis(x),
+                'x_energy': energy(x),
+                'x_mad': mad(x),  # Mean Absolute Deviation
+                'x_zcr': zero_crossings(x),  # Zero Crossing Rate
+                'x_autocorr': autocorrelation(x),  # Autocorrelation
+                'x_ptp': peak_to_peak(x),  # Peak to Peak Amplitude
+                'x_fft_mean': fft_features(x)[0],  # FFT Mean
+                'x_fft_std': fft_features(x)[1],  # FFT Standard Deviation
+                'x_fft_max': fft_features(x)[2],  # FFT Max
+                'x_fft_min': fft_features(x)[3],  # FFT Min
+
+                # Y-axis features
+                'y_mean': np.mean(y),
+                'y_std': np.std(y),
+                'y_max': np.max(y),
+                'y_min': np.min(y),
+                'y_range': np.ptp(y),
+                'y_median': np.median(y),
+                'y_rms': rms(y),
+                'y_skew': skew(y),
+                'y_kurtosis': kurtosis(y),
+                'y_energy': energy(y),
+                'y_mad': mad(y),
+                'y_zcr': zero_crossings(y),
+                'y_autocorr': autocorrelation(y),
+                'y_ptp': peak_to_peak(y),
+                'y_fft_mean': fft_features(y)[0],
+                'y_fft_std': fft_features(y)[1],
+                'y_fft_max': fft_features(y)[2],
+                'y_fft_min': fft_features(y)[3],
+
+                # Z-axis features
+                'z_mean': np.mean(z),
+                'z_std': np.std(z),
+                'z_max': np.max(z),
+                'z_min': np.min(z),
+                'z_range': np.ptp(z),
+                'z_median': np.median(z),
+                'z_rms': rms(z),
+                'z_skew': skew(z),
+                'z_kurtosis': kurtosis(z),
+                'z_energy': energy(z),
+                'z_mad': mad(z),
+                'z_zcr': zero_crossings(z),
+                'z_autocorr': autocorrelation(z),
+                'z_ptp': peak_to_peak(z),
+                'z_fft_mean': fft_features(z)[0],
+                'z_fft_std': fft_features(z)[1],
+                'z_fft_max': fft_features(z)[2],
+                'z_fft_min': fft_features(z)[3],
+
+                # Absolute acceleration features
+                'abs_mean': np.mean(abs_accel),
+                'abs_std': np.std(abs_accel),
+                'abs_max': np.max(abs_accel),
+                'abs_min': np.min(abs_accel),
+                'abs_range': np.ptp(abs_accel),
+                'abs_median': np.median(abs_accel),
+                'abs_rms': rms(abs_accel),
+                'abs_skew': skew(abs_accel),
+                'abs_kurtosis': kurtosis(abs_accel),
+                'abs_energy': energy(abs_accel),
+                'abs_mad': mad(abs_accel),
+                'abs_zcr': zero_crossings(abs_accel),
+                'abs_autocorr': autocorrelation(abs_accel),
+                'abs_ptp': peak_to_peak(abs_accel),
+                'abs_fft_mean': fft_features(abs_accel)[0],
+                'abs_fft_std': fft_features(abs_accel)[1],
+                'abs_fft_max': fft_features(abs_accel)[2],
+                'abs_fft_min': fft_features(abs_accel)[3],
+    }
+
+
+
+
 
 # Configuration
 SAMPLING_RATE = 100  # Hz
 WINDOW_SECONDS = 5
 WINDOW_SIZE = SAMPLING_RATE * WINDOW_SECONDS
-#file_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project\\FinalRawData.csv"
+HDF5_PATH = "Project/Project/dataP.csv"
 
 def load_csv(file_path):
-    """Load CSV file and return as DataFrame."""
     df = pd.read_csv(file_path)
     df.ffill(inplace=True)  # Forward fill missing values
     df.bfill(inplace=True)  # Backward fill missing values
     return df
 
-def preprocess_data(df):
-    """Applies smoothing and normalization to the sensor data."""
-    def moving_average(data, window_size=50):
-        return np.convolve(data, np.ones(window_size)/window_size, mode='same')
-
-    # Apply moving average
-    for col in df.columns[1:]:  # Skip the first column (time)
-        df[col] = moving_average(df[col])
-
-    # Normalize sensor data
-    time_column = df.iloc[:, 0]  # First column is assumed to be time
-    data_to_normalize = df.iloc[:, 1:]  # Exclude time column
-    scaler = StandardScaler()
-    normalized_data = scaler.fit_transform(data_to_normalize)
-
-    # Recombine into DataFrame
-    df_normalized = pd.DataFrame(normalized_data, columns=data_to_normalize.columns)
-    df_normalized.insert(0, df.columns[0], time_column)
-    return df_normalized
-
 def extract_features(df):
-    """Extracts statistical features from accelerometer data in 5-second windows."""
-    columns = [
-        'x_mean', 'x_std', 'x_max', 'x_min', 'x_range', 'x_median', 'x_rms', 'x_skew', 'x_kurtosis', 'x_zcr',
-        'y_mean', 'y_std', 'y_max', 'y_min', 'y_range', 'y_median', 'y_rms', 'y_skew', 'y_kurtosis', 'y_zcr',
-        'z_mean', 'z_std', 'z_max', 'z_min', 'z_range', 'z_median', 'z_rms', 'z_skew', 'z_kurtosis', 'z_zcr',
-        'abs_mean', 'abs_std', 'abs_max', 'abs_min', 'abs_range', 'abs_median', 'abs_rms', 'abs_skew', 'abs_kurtosis', 'abs_zcr'
-    ]
-
-    extracted_features = pd.DataFrame(columns=columns)
-
-    def compute_features(segment):
-        """Computes statistical features for a given data segment."""
-        x, y, z = segment[:, 0], segment[:, 1], segment[:, 2]
-        abs_accel = np.sqrt(x**2 + y**2 + z**2)
-
-        return {
-            'x_mean': np.mean(x), 'x_std': np.std(x), 'x_max': np.max(x), 'x_min': np.min(x), 'x_range': np.ptp(x),
-            'x_median': np.median(x), 'x_rms': np.sqrt(np.mean(x**2)), 'x_skew': pd.Series(x).skew(), 'x_kurtosis': pd.Series(x).kurtosis(),
-            'x_zcr': np.sum(np.diff(np.sign(x)) != 0) / len(x),
-
-            'y_mean': np.mean(y), 'y_std': np.std(y), 'y_max': np.max(y), 'y_min': np.min(y), 'y_range': np.ptp(y),
-            'y_median': np.median(y), 'y_rms': np.sqrt(np.mean(y**2)), 'y_skew': pd.Series(y).skew(), 'y_kurtosis': pd.Series(y).kurtosis(),
-            'y_zcr': np.sum(np.diff(np.sign(y)) != 0) / len(y),
-
-            'z_mean': np.mean(z), 'z_std': np.std(z), 'z_max': np.max(z), 'z_min': np.min(z), 'z_range': np.ptp(z),
-            'z_median': np.median(z), 'z_rms': np.sqrt(np.mean(z**2)), 'z_skew': pd.Series(z).skew(), 'z_kurtosis': pd.Series(z).kurtosis(),
-            'z_zcr': np.sum(np.diff(np.sign(z)) != 0) / len(z),
-
-            'abs_mean': np.mean(abs_accel), 'abs_std': np.std(abs_accel), 'abs_max': np.max(abs_accel), 'abs_min': np.min(abs_accel), 'abs_range': np.ptp(abs_accel),
-            'abs_median': np.median(abs_accel), 'abs_rms': np.sqrt(np.mean(abs_accel**2)), 'abs_skew': pd.Series(abs_accel).skew(), 'abs_kurtosis': pd.Series(abs_accel).kurtosis(),
-            'abs_zcr': np.sum(np.diff(np.sign(abs_accel)) != 0) / len(abs_accel),
-        }
-
-    # Process in 5-second windows
-    data = df.iloc[:, 1:4].to_numpy()  # Exclude time column
-    num_segments = len(data) // WINDOW_SIZE
-
-    for i in range(num_segments):
-        start_idx = i * WINDOW_SIZE
-        end_idx = start_idx + WINDOW_SIZE
-        segment = data[start_idx:end_idx, :]
+    extracted_features = []
+    segment_num = len(df) // WINDOW_SIZE
+    
+    for i in range(segment_num):
+        segment = df[i*500:(i+1)*500, :]
+                
+        # Extract features for the segment
+        new_row = extract_features_from_segment(segment)
         
-        extracted_features.loc[len(extracted_features)] = compute_features(segment)
+        # Append the extracted features for this segment to the list
+        extracted_features.append(new_row)
+        
+    # Convert the list of features into a DataFrame
+    features_df = pd.DataFrame(extracted_features)
+    
+    return features_df
 
-    return extracted_features
+
+
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+
+def normalize_dataframe(input_df):
+    # Initialize the scaler
+    scaler = StandardScaler()
+    
+    # Extract all feature columns
+    features = input_df.values
+    
+    # Apply normalization (Z-score)
+    normalized_features = scaler.fit_transform(features)
+    
+    # Create a new DataFrame with the normalized features
+    normalized_df = pd.DataFrame(normalized_features, columns=input_df.columns)
+    
+    return normalized_df
+
 
 
 def predict(file_path):
     print(f"[DEBUG] predict() received file_path: {file_path}")
+    
     df = load_csv(file_path)
 
     # Data Processing
-    df_processed = preprocess_data(df)
+    df_processed = process_dataset(df).to_numpy()
 
     # Feature Extraction
     df_features = extract_features(df_processed)
+    
+    # normalization
+    df_normalized = normalize_dataframe(df_features)
 
     # Prediction Model
     # Load the trained model
-    model_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\trained_model.pkl"
+    model_path = "Project/Project/trained_model.pkl"
     clf = joblib.load(model_path)
     print(f"Model loaded from {model_path}")
 
     # Load the new unlabeled dataset
-    unlabeled_test_set = df_features
+    unlabeled_test_set = df_normalized
 
     # Apply the same feature scaling
     X_unlabeled = clf.named_steps["standardscaler"].transform(unlabeled_test_set.values)
@@ -120,9 +243,10 @@ def predict(file_path):
     })
 
     #print("WE made it")
-    output_csv_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project\\Predictions\\pred.csv"
+    output_csv_path = "Project/Project/pred.csv"
     output_df.to_csv(output_csv_path, index=False)
     #print(f"Predictions saved to {output_csv_path}")
     return output_csv_path
 
+predict(HDF5_PATH)
 

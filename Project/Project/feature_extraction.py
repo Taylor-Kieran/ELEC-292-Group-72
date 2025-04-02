@@ -1,142 +1,190 @@
 import h5py
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from scipy.stats import skew, kurtosis
+from scipy.fft import fft
 
-# Configuration
-SAMPLING_RATE = 100  # Hz
-WINDOW_SECONDS = 5
-WINDOW_SIZE = SAMPLING_RATE * WINDOW_SECONDS
-HDF5_PATH = "Project/Project/dataset/dataset.hdf5"
-OUTPUT_CSV_NAME = "extracted.csv"
+def mad(x):
+    return np.mean(np.abs(x - np.mean(x)))
 
-# Column definitions (same as before)
-columns = [
-    # X-axis features (10)
-    'x_mean', 'x_std', 'x_max', 'x_min', 'x_range', 
-    'x_median', 'x_rms', 'x_skew', 'x_kurtosis', 'x_zcr',
-    # Y-axis features (10)
-    'y_mean', 'y_std', 'y_max', 'y_min', 'y_range',
-    'y_median', 'y_rms', 'y_skew', 'y_kurtosis', 'y_zcr',
-    # Z-axis features (10)
-    'z_mean', 'z_std', 'z_max', 'z_min', 'z_range',
-    'z_median', 'z_rms', 'z_skew', 'z_kurtosis', 'z_zcr',
-    # Absolute acceleration features (10)
-    'abs_mean', 'abs_std', 'abs_max', 'abs_min', 'abs_range',
-    'abs_median', 'abs_rms', 'abs_skew', 'abs_kurtosis', 'abs_zcr',
-    # Label
-    'label'
-]
+# Zero Crossing Rate
+def zero_crossings(x):
+    return np.sum(np.diff(np.sign(x)) != 0)
 
-# Create empty DataFrame
-extracted_features = pd.DataFrame(columns=columns)
+# Autocorrelation (lag=1)
+def autocorrelation(x):
+    return np.corrcoef(x[:-1], x[1:])[0, 1]
 
-def process_segment(segment, file_name, dataframe):
-    """Process a 5-second segment and append features to dataframe"""
-    x, y, z, abs_accel = segment[:, 0], segment[:, 1], segment[:, 2], segment[:, 3]
-    
-    new_row = {
+# Peak-to-Peak Amplitude
+def peak_to_peak(x):
+    return np.max(x) - np.min(x)
+
+# FFT (Frequency Domain Features)
+def fft_features(x):
+    fft_vals = fft(x)
+    magnitude = np.abs(fft_vals)
+    return np.mean(magnitude), np.std(magnitude), np.max(magnitude), np.min(magnitude)
+
+# Function to extract 10 features from a 5-second segment of acceleration data
+def extract_features_from_segment(data):
+    """Extract features from a 5-second segment of acceleration data"""
+    # Extract x, y, z, and absolute acceleration
+    x, y, z, abs_accel = data[:, 0], data[:, 1], data[:, 2], data[:, 3]
+
+    # Function to calculate RMS
+    def rms(values):
+        return np.sqrt(np.mean(values**2))
+
+    # Function to calculate energy
+    def energy(values):
+        return np.sum(values**2)
+
+    # Extract features (mean, std, max, min, range, median, rms, skewness, kurtosis, energy)
+    return {
         # X-axis features
         'x_mean': np.mean(x),
-        'x_std': np.std(x),
-        'x_max': np.max(x),
-        'x_min': np.min(x),
-        'x_range': np.ptp(x),
-        'x_median': np.median(x),
-        'x_rms': np.sqrt(np.mean(x**2)),
-        'x_skew': pd.Series(x).skew(),
-        'x_kurtosis': pd.Series(x).kurtosis(),
-        'x_zcr': np.sum(np.diff(np.sign(x)) != 0)/len(x),
-        
-        # Y-axis features (same pattern as x)
-        'y_mean': np.mean(y),
-        'y_std': np.std(y),
-        'y_max': np.max(y),
-        'y_min': np.min(y),
-        'y_range': np.ptp(y),
-        'y_median': np.median(y),
-        'y_rms': np.sqrt(np.mean(y**2)),
-        'y_skew': pd.Series(y).skew(),
-        'y_kurtosis': pd.Series(y).kurtosis(),
-        'y_zcr': np.sum(np.diff(np.sign(y)) != 0)/len(y),
-        
-        # Z-axis features (same pattern)
-        'z_mean': np.mean(z),
-        'z_std': np.std(z),
-        'z_max': np.max(z),
-        'z_min': np.min(z),
-        'z_range': np.ptp(z),
-        'z_median': np.median(z),
-        'z_rms': np.sqrt(np.mean(z**2)),
-        'z_skew': pd.Series(z).skew(),
-        'z_kurtosis': pd.Series(z).kurtosis(),
-        'z_zcr': np.sum(np.diff(np.sign(z)) != 0)/len(z),
-        
-        # Absolute acceleration features
-        'abs_mean': np.mean(abs_accel),
-        'abs_std': np.std(abs_accel),
-        'abs_max': np.max(abs_accel),
-        'abs_min': np.min(abs_accel),
-        'abs_range': np.ptp(abs_accel),
-        'abs_median': np.median(abs_accel),
-        'abs_rms': np.sqrt(np.mean(abs_accel**2)),
-        'abs_skew': pd.Series(abs_accel).skew(),
-        'abs_kurtosis': pd.Series(abs_accel).kurtosis(),
-        'abs_zcr': np.sum(np.diff(np.sign(abs_accel)) != 0)/len(abs_accel),
-        
-        # Label
-        'label': 1 if "Jumping" in file_name else 0
+                'x_std': np.std(x),
+                'x_max': np.max(x),
+                'x_min': np.min(x),
+                'x_range': np.ptp(x),
+                'x_median': np.median(x),
+                'x_rms': rms(x),
+                'x_skew': skew(x),
+                'x_kurtosis': kurtosis(x),
+                'x_energy': energy(x),
+                'x_mad': mad(x),  # Mean Absolute Deviation
+                'x_zcr': zero_crossings(x),  # Zero Crossing Rate
+                'x_autocorr': autocorrelation(x),  # Autocorrelation
+                'x_ptp': peak_to_peak(x),  # Peak to Peak Amplitude
+                'x_fft_mean': fft_features(x)[0],  # FFT Mean
+                'x_fft_std': fft_features(x)[1],  # FFT Standard Deviation
+                'x_fft_max': fft_features(x)[2],  # FFT Max
+                'x_fft_min': fft_features(x)[3],  # FFT Min
+
+                # Y-axis features
+                'y_mean': np.mean(y),
+                'y_std': np.std(y),
+                'y_max': np.max(y),
+                'y_min': np.min(y),
+                'y_range': np.ptp(y),
+                'y_median': np.median(y),
+                'y_rms': rms(y),
+                'y_skew': skew(y),
+                'y_kurtosis': kurtosis(y),
+                'y_energy': energy(y),
+                'y_mad': mad(y),
+                'y_zcr': zero_crossings(y),
+                'y_autocorr': autocorrelation(y),
+                'y_ptp': peak_to_peak(y),
+                'y_fft_mean': fft_features(y)[0],
+                'y_fft_std': fft_features(y)[1],
+                'y_fft_max': fft_features(y)[2],
+                'y_fft_min': fft_features(y)[3],
+
+                # Z-axis features
+                'z_mean': np.mean(z),
+                'z_std': np.std(z),
+                'z_max': np.max(z),
+                'z_min': np.min(z),
+                'z_range': np.ptp(z),
+                'z_median': np.median(z),
+                'z_rms': rms(z),
+                'z_skew': skew(z),
+                'z_kurtosis': kurtosis(z),
+                'z_energy': energy(z),
+                'z_mad': mad(z),
+                'z_zcr': zero_crossings(z),
+                'z_autocorr': autocorrelation(z),
+                'z_ptp': peak_to_peak(z),
+                'z_fft_mean': fft_features(z)[0],
+                'z_fft_std': fft_features(z)[1],
+                'z_fft_max': fft_features(z)[2],
+                'z_fft_min': fft_features(z)[3],
+
+                # Absolute acceleration features
+                'abs_mean': np.mean(abs_accel),
+                'abs_std': np.std(abs_accel),
+                'abs_max': np.max(abs_accel),
+                'abs_min': np.min(abs_accel),
+                'abs_range': np.ptp(abs_accel),
+                'abs_median': np.median(abs_accel),
+                'abs_rms': rms(abs_accel),
+                'abs_skew': skew(abs_accel),
+                'abs_kurtosis': kurtosis(abs_accel),
+                'abs_energy': energy(abs_accel),
+                'abs_mad': mad(abs_accel),
+                'abs_zcr': zero_crossings(abs_accel),
+                'abs_autocorr': autocorrelation(abs_accel),
+                'abs_ptp': peak_to_peak(abs_accel),
+                'abs_fft_mean': fft_features(abs_accel)[0],
+                'abs_fft_std': fft_features(abs_accel)[1],
+                'abs_fft_max': fft_features(abs_accel)[2],
+                'abs_fft_min': fft_features(abs_accel)[3],
     }
-    
-    dataframe.loc[len(dataframe)] = new_row
 
-# Main processing
-with h5py.File(HDF5_PATH, "r") as f:  # Read-only mode
-    pre_processed_group = f["pre-processed"]
-    
-    for file_name in pre_processed_group:
-        # Get the dataset (CSV data stored in HDF5)
-        dataset = pre_processed_group[file_name]
-        
-        # Convert to numpy array (assuming data is stored as array)
-        data = np.array(dataset)
-        
-        # Process in 5-second windows
-        num_segments = len(data) // WINDOW_SIZE
-        
-        for i in range(num_segments):
-            start_idx = i * WINDOW_SIZE
-            end_idx = start_idx + WINDOW_SIZE
-            segment = data[start_idx:end_idx, 1:5]  # Skip time column (col 0)
+# Function to extract features from pre-processed data
+def feature_extraction(file_path):
+    """Extract features from pre-processed acceleration data"""
+    with h5py.File(file_path, "r") as f:
+        preprocessed_group = f["pre-processed"]
+        extracted_features = []
+
+        count = 0
+        for name in preprocessed_group:
+            data = np.array(preprocessed_group[name])  # Assuming data is stored as a numpy array
             
-            process_segment(segment, file_name, extracted_features)
+            # Segment the data into 5-second windows (500 rows each)
+            num_segments = len(data) // 500  # Number of full 5-second segments
+            for i in range(num_segments):
+                segment = data[i*500:(i+1)*500, :]
+                
+                # Extract features for the segment
+                new_row = extract_features_from_segment(segment)
+                
+                # Determine label based on filename
+                label = 0 if "Walking" in name else 1 if "Jumping" in name else -1
+                new_row['label'] = label  # Add the label to the features
+                
+                # Append the extracted features for this segment to the list
+                extracted_features.append(new_row)
+        # Convert the list of dictionaries to a DataFrame
+        return pd.DataFrame(extracted_features)
 
-# Display the resulting DataFrame
+# Example usage
+
+file_path = "Project/Project/dataset/dataset.hdf5"
+# Extract features from the pre-processed data
+extracted_df = feature_extraction(file_path)
 
 
 
+# Normalize the feature data using Z-score normalization
+scaler = StandardScaler()
+features = extracted_df.iloc[:, :-1].values  # Extract all feature columns
+normalized_features = scaler.fit_transform(features)
+normalized_df = pd.DataFrame(normalized_features, columns=extracted_df.columns[:-1])
+normalized_df['label'] = extracted_df['label'].values  # Reattach labels
 
-with h5py.File(HDF5_PATH, "a") as f:  # 'a' mode to append without overwriting
-    # Create segmented group if it doesn't exist
+
+
+# Ensure the label column is integer type
+normalized_df["label"] = normalized_df["label"].astype(int)
+
+
+# Save the normalized features to the HDF5 file
+with h5py.File(file_path, "r+") as f:
+    # Create 'segmented' group if it doesn't exist
     if "segmented" not in f:
         segmented_group = f.create_group("segmented")
     else:
         segmented_group = f["segmented"]
-    
-    # Remove existing dataset if present (to avoid conflicts)
-    if OUTPUT_CSV_NAME in segmented_group:
-        del segmented_group[OUTPUT_CSV_NAME]
-    
-    # Convert DataFrame to CSV string then to bytes
-    csv_data = extracted_features.to_csv(index=False)
-    csv_bytes = csv_data.encode('utf-8')
-    
-    # Store in HDF5 as a fixed-length string dataset
-    segmented_group.create_dataset(
-        OUTPUT_CSV_NAME,
-        data=csv_bytes,
-        dtype=h5py.string_dtype('utf-8')
-    )
 
-print(f"\nCSV dataset successfully saved to: /segmented/{OUTPUT_CSV_NAME}")
-print("Final DataFrame summary:")
-print(extracted_features.info())
+    # If "extracted" dataset already exists, delete it to avoid conflict
+    if "extracted" in segmented_group:
+        del segmented_group["extracted"]
+
+    # Save the normalized DataFrame as a NumPy array to the 'segmented' group
+    segmented_group.create_dataset("extracted", data=normalized_df.to_numpy())
+
+print("Feature extraction and normalization complete. Data saved in 'segmented/extracted' group.")

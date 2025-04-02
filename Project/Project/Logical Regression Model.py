@@ -10,17 +10,23 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, recall_score, auc
 import io
 import h5py
+import numpy as np
 
-HDF5_PATH = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\Project\\Project\\dataset\\dataset.hdf5"
+HDF5_PATH = "Project/Project/dataset/dataset.hdf5"
 
 with h5py.File(HDF5_PATH, "r") as f:
-    csv_data = f["segmented//extracted.csv"][()].decode("utf-8")  # Decode bytes to string
-    df = pd.read_csv(io.StringIO(csv_data))  # Convert to DataFrame
-    print(df.head())
+    data = np.array(f["segmented/extracted"])  # Read as NumPy array
+    columns = [f"feature_{i}" for i in range(data.shape[1] - 1)] + ["label"]  # Adjust column names
+    
+    # Convert to DataFrame and ensure the 'label' column is of integer type
+    df = pd.DataFrame(data, columns=columns)
+    df["label"] = df["label"].astype(int)  
+
+
 
 # Extract features
-X = df.drop(columns=["label"]).values  # Use all columns except "label" as features
-y = df["label"].values  # Labels (0 = walking, 1 = jumping)
+X = df.iloc[:, :-1].values  # All columns except the last one as features
+y = df.iloc[:, -1].values  # Last column as labels (0 = walking, 1 = jumping)
 
 # assign 10% test 90% train 0% val
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0)
@@ -50,7 +56,7 @@ clf = make_pipeline(StandardScaler(), l_reg)
 clf.fit(X_train, y_train)
 
 # Save model path
-model_path = "C:\\Users\\charl\\.vscode\\290\\ELEC-292-Group-72\\trained_model.pkl"
+model_path = "Project/Project/trained_model.pkl"
 joblib.dump(clf, model_path)
 print(f"Model saved to {model_path}")
 
