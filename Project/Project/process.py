@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 # Moving Average Filter
-def moving_average(data, window_size=50):
+def moving_average(data, window_size=100):
     return np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
 # Function to process a dataset
@@ -11,7 +11,7 @@ def process_dataset(data):
     # Convert to DataFrame for easier processing
     df = pd.DataFrame(data)
     
-    # Fill missing values using forward fill, then backward fill
+    # filling in missing values using forward and backward fill
     df.ffill(inplace=True)
     df.bfill(inplace=True)
     
