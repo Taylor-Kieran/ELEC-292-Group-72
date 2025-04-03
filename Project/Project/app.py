@@ -34,24 +34,6 @@ def open_csv():
     if file_path:
         trained_file = predict(file_path)
         classifier_plot(trained_file)
-#read and display csv 
-'''
-def display_csv(file_path):
-    global data
-    try:
-        data = pd.read_csv(file_path)
-        tree.delete(*tree.get_children()) #clear any previous rows in treeview
-        tree.configure(columns=list(data.columns))
-        #for columns
-        for col in data.columns:
-            tree.heading(col, text=col)
-            tree.column(col, width=100)
-        for _, row in data.iterrows():
-            tree.insert("", "end", values = list(row))
-        status_label.configure(text=f"CSV loaded: {file_path}")
-    except Exception as e:
-        status_label.configure(text=f"Error:{e}")'
-'''
 
 #function to generate classifier plot
 def classifier_plot(file_path): 
