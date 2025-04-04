@@ -1,4 +1,3 @@
-import h5py
 import matplotlib.pyplot as plt
 import pandas as pd
 import joblib
@@ -8,15 +7,14 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, recall_score, auc
-import io
 import h5py
 import numpy as np
 
 HDF5_PATH = "Project/Project/dataset/dataset.hdf5"
 
 with h5py.File(HDF5_PATH, "r") as f:
-    data = np.array(f["segmented/extracted"])  # Read as NumPy array
-    columns = [f"feature_{i}" for i in range(data.shape[1] - 1)] + ["label"]  # Adjust column names
+    data = np.array(f["segmented/extracted"])
+    columns = [f"feature_{i}" for i in range(data.shape[1] - 1)] + ["label"]  # Change column name
     
     # Convert to DataFrame and ensure the 'label' column is of integer type
     df = pd.DataFrame(data, columns=columns)
@@ -25,27 +23,28 @@ with h5py.File(HDF5_PATH, "r") as f:
 
 
 # Extract features
-X = df.iloc[:, :-1].values  # All columns except the last one as features
-y = df.iloc[:, -1].values  # Last column as labels (0 = walking, 1 = jumping)
+X = df.iloc[:, :-1].values
+y = df.iloc[:, -1].values
 
 # assign 10% test 90% train 0% val
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0) 
 
 # Save train and test
 with h5py.File(HDF5_PATH, "a") as f:
-    # Ensure the "segmented" group exists (or create it if it doesn't)
+
+    # Ensure the "segmented" group exists
     if "segmented" not in f:
         segmented_group = f.create_group("segmented")
     else:
         segmented_group = f["segmented"]
 
-    # Save the train/test datasets inside the "segmented" group
+    # Save the train/test datasets
     for name, dataset in [("X_train", X_train),("X_test", X_test), ("y_train", y_train), ("y_test", y_test)]:
         if name in segmented_group:
             del segmented_group[name]
         segmented_group.create_dataset(name, data=dataset)
 
-# Define Standard Scaler to normalize inputs
+# Define Standard Scaler
 scaler = StandardScaler()
 
 # Define classifier and pipeline
@@ -60,7 +59,7 @@ model_path = "Project/Project/trained_model.pkl"
 joblib.dump(clf, model_path)
 print(f"Model saved to {model_path}")
 
-# Get predictions
+# Actaully Predict
 y_pred = clf.predict(X_test)
 y_probs = clf.predict_proba(X_test)[:, 1]  # Probabilities for the positive class (jumping)
 
