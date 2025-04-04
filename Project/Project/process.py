@@ -25,15 +25,15 @@ def process_hdf5(file_path):
     with h5py.File(file_path, "r+") as f:
         raw_group = f["raw"]
         
-        # Create pre-processed group if not exists
+        # Creating pre-processed group if not exists
         if "pre-processed" not in f:
             f.create_group("pre-processed")
         
         processed_data = {}
         
         for name in raw_group:
-            data = np.array(raw_group[name])  # Load dataset
-            processed_data[name] = process_dataset(data)  # Process data
+            data = np.array(raw_group[name])  
+            processed_data[name] = process_dataset(data)  
         
     return processed_data
 

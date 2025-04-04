@@ -3,25 +3,27 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import skew, kurtosis
+from sklearn.preprocessing import StandardScaler
 
-# Autocorrelation (lag=1)
+
+# Autocorrelation 
 def autocorrelation(x):
     return np.corrcoef(x[:-1], x[1:])[0, 1]
 
-# Function to extract 10 features from a 5-second segment of acceleration data
+# Function to extract 10 different features from a 5 second segment
 def extract_features_from_segment(data):
-    """Extract features from a 5-second segment of acceleration data"""
-    # Extract x, y, z, and absolute acceleration
+    
+    # Extracting features
     x, y, z, abs_accel = data[:, 0], data[:, 1], data[:, 2], data[:, 3]
 
-    # Function to calculate RMS
+    # Calculating RMS
     def rms(values):
         return np.sqrt(np.mean(values**2))
 
-    # Extract features (mean, std, max, min, range, median, rms, skewness, kurtosis, energy)
+    # returning features
     return {
-        # X-axis features
-        'x_mean': np.mean(x),
+        
+                'x_mean': np.mean(x),
                 'x_std': np.std(x),
                 'x_max': np.max(x),
                 'x_min': np.min(x),
@@ -32,7 +34,6 @@ def extract_features_from_segment(data):
                 'x_kurtosis': kurtosis(x),
                 'x_autocorr': autocorrelation(x),  
 
-                # Y-axis features
                 'y_mean': np.mean(y),
                 'y_std': np.std(y),
                 'y_max': np.max(y),
@@ -43,9 +44,7 @@ def extract_features_from_segment(data):
                 'y_skew': skew(y),
                 'y_kurtosis': kurtosis(y),
                 'y_autocorr': autocorrelation(y),
- 
-                
-                # Z-axis features
+       
                 'z_mean': np.mean(z),
                 'z_std': np.std(z),
                 'z_max': np.max(z),
@@ -57,8 +56,6 @@ def extract_features_from_segment(data):
                 'z_kurtosis': kurtosis(z),
                 'z_autocorr': autocorrelation(z),
 
-                
-                # Absolute acceleration features
                 'abs_mean': np.mean(abs_accel),
                 'abs_std': np.std(abs_accel),
                 'abs_max': np.max(abs_accel),
@@ -94,24 +91,21 @@ def feature_extraction(file_path):
                     new_row['label'] = label  
 
                 
-                # Append the extracted features for this segment to the list
+                # Appending the dataframes
                 extracted_features.append(new_row)
-        # Convert the list of dictionaries to a DataFrame
+
         return pd.DataFrame(extracted_features)
 
 
-# Normalize the feature data using Z-score normalization
-from sklearn.preprocessing import StandardScaler
-import pandas as pd
-
+# Normalizing the feature data using Z-score normalization
 def normalize_features(extracted_df):
     scaler = StandardScaler()
-    features = extracted_df.drop(columns=["label"], errors="ignore").values  # Drop 'label' if it exists
+    features = extracted_df.drop(columns=["label"], errors="ignore").values 
     normalized_features = scaler.fit_transform(features)
     
     normalized_df = pd.DataFrame(normalized_features, columns=[col for col in extracted_df.columns if col != "label"])
     
-    # Reattach label only if it was originally present
+    # Reattaching the labels
     if "label" in extracted_df.columns:
         normalized_df["label"] = extracted_df["label"].values
 

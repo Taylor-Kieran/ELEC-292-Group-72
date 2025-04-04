@@ -14,7 +14,7 @@ with h5py.File(file_path, "r+") as f:
     preprocessed_group = f["pre-processed"]
     for name, df in processed_data.items():
         if name in preprocessed_group:
-            del preprocessed_group[name]  # Remove existing dataset if present
+            del preprocessed_group[name]  
         preprocessed_group.create_dataset(name, data=df.to_numpy())
 
 print("Pre-processing complete. Data saved in 'pre-processed' group.")
