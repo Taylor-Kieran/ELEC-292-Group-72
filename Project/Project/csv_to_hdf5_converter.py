@@ -17,14 +17,13 @@ os.makedirs(dataset_folder, exist_ok=True)
 if not os.path.exists(raw_data_folder):
     raise FileNotFoundError(f"Folder '{raw_data_folder}' not found in {os.getcwd()}")
 
-# Create HDF5 file
 with h5py.File(hdf5_path, "w") as hdf5:
-    # Create groups in HDF5
+   
     raw_group = hdf5.create_group("raw")
     hdf5.create_group("pre_processed")
     hdf5.create_group("segmented")
 
-    # Loop through CSV files in raw_data folder and store them in the 'raw' group
+    
     for file in os.listdir(raw_data_folder):
         if file.endswith(".csv"):
             file_path = os.path.join(raw_data_folder, file)

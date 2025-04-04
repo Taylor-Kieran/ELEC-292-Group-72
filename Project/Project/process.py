@@ -8,15 +8,15 @@ def moving_average(data, window_size=50):
 
 # Function to process a dataset
 def process_dataset(data):
-    # Convert to DataFrame for easier processing
+    # Converting to DataFrame for easier processing
     df = pd.DataFrame(data)
     
     # filling in missing values using forward and backward fill
     df.ffill(inplace=True)
     df.bfill(inplace=True)
     
-    # Apply moving average filter to all columns except the first (time column)
-    for col in df.columns[1:]:  # Skip time column (assuming column 0 is time)
+    # Appling the moving average filter
+    for col in df.columns[1:]:
         df[col] = moving_average(df[col])
     return df
 

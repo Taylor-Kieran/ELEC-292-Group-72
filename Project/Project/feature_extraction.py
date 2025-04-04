@@ -74,27 +74,24 @@ def extract_features_from_segment(data):
 
 # Function to extract features from pre-processed data
 def feature_extraction(file_path):
-    """Extract features from pre-processed acceleration data"""
     with h5py.File(file_path, "r") as f:
         preprocessed_group = f["pre-processed"]
         extracted_features = []
-
-        count = 0
+        
         for name in preprocessed_group:
-            data = np.array(preprocessed_group[name])  # Assuming data is stored as a numpy array
+            data = np.array(preprocessed_group[name])  
             
-            # Segment the data into 5-second windows (500 rows each)
-            num_segments = len(data) // 500  # Number of full 5-second segments
+            # Segmenting the data into 5 second segments
+            num_segments = len(data) // 500  
             for i in range(num_segments):
                 segment = data[i*500:(i+1)*500, :]
-                
-                # Extract features for the segment
+                # Extracting features for the segment
                 new_row = extract_features_from_segment(segment)
                 
-                # Determine label based on filename
+                # Determining label based on filename
                 if "Walking" in name or "Jumping" in name:
                     label = 0 if "Walking" in name else 1
-                    new_row['label'] = label  # Add the label to the features
+                    new_row['label'] = label  
 
                 
                 # Append the extracted features for this segment to the list
