@@ -15,21 +15,19 @@ import pandas as pd
 def feature_extraction(df):
     extracted_features = []
     
-    # Convert DataFrame to a NumPy array
+    # Converting dataframe to numpy array for easier processing
     data = df.to_numpy()
     
-    # Segment the data into 5-second windows (500 rows each)
-    num_segments = len(data) // 500  # Number of full 5-second segments
+    # Segmenting the data into 5 second windows for feature extraction
+    num_segments = len(data) // 500 
     for i in range(num_segments):
         segment = data[i * 500:(i + 1) * 500, :]
         
-        # Extract features for the segment
         new_row = extract_features_from_segment(segment)
-        
-        # Append the extracted features for this segment to the list
+
         extracted_features.append(new_row)
     
-    # Convert the list of dictionaries to a DataFrame
+    #
     return pd.DataFrame(extracted_features)
 
 
@@ -37,33 +35,35 @@ def feature_extraction(df):
 def predict(file_path, MODEL_PATH, OUTPUT_CSV_PATH):
     print(f"[DEBUG] Processing HDF5 file: {file_path}")
     
+    # reading the data
     df = pd.read_csv(file_path)
+    # processing
     processed_data = process_dataset(df)
+    #feature extraction and normalization
     extracted_df = feature_extraction(processed_data)
     normalized_df = normalize_features(extracted_df)
   
-
     # Load trained model
     clf = joblib.load(MODEL_PATH)
     print(f"[DEBUG] Model loaded from {MODEL_PATH}")
 
-    # Ensure data matches expected format
+    # to ensure data matches expected format
     X_unlabeled = normalized_df.drop(columns=["label"], errors="ignore").values
 
-    # Apply the same feature scaling
+    # Applying the same feature scaling
     if hasattr(clf, "named_steps") and "standardscaler" in clf.named_steps:
         X_unlabeled = clf.named_steps["standardscaler"].transform(X_unlabeled)
     else:
         print("[WARNING] Model does not contain 'standardscaler'. Proceeding without scaling.")
 
-    # Make predictions
+    # Making predictions
     predicted_labels = clf.predict(X_unlabeled)
-    predicted_probs = clf.predict_proba(X_unlabeled)[:, 1]  # Probability of jumping
+    predicted_probs = clf.predict_proba(X_unlabeled)[:, 1]  
 
-    # Save results to CSV
+    # Saving results to CSV
     output_df = pd.DataFrame({
         "Sample_ID": np.arange(len(predicted_labels)),
-        "Predicted_Label": predicted_labels,  # 0 = walking, 1 = jumping
+        "Predicted_Label": predicted_labels, 
         "Jumping_Probability": predicted_probs
     })
     output_df.to_csv(OUTPUT_CSV_PATH, index=False)

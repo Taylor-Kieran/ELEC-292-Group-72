@@ -29,7 +29,7 @@ X = df.iloc[:, :-1].values  # All columns except the last one as features
 y = df.iloc[:, -1].values  # Last column as labels (0 = walking, 1 = jumping)
 
 # assign 10% test 90% train 0% val
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0) 
 
 # Save train and test
 with h5py.File(HDF5_PATH, "a") as f:
