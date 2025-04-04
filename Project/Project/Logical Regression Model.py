@@ -1,4 +1,3 @@
-import h5py
 import matplotlib.pyplot as plt
 import pandas as pd
 import joblib
@@ -8,15 +7,14 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, recall_score, auc
-import io
 import h5py
 import numpy as np
 
 HDF5_PATH = "Project/Project/dataset/dataset.hdf5"
 
 with h5py.File(HDF5_PATH, "r") as f:
-    data = np.array(f["segmented/extracted"]) 
-    columns = [f"feature_{i}" for i in range(data.shape[1] - 1)] + ["label"] 
+    data = np.array(f["segmented/extracted"])
+    columns = [f"feature_{i}" for i in range(data.shape[1] - 1)] + ["label"]  
     
     # Converting to Dataframe
     df = pd.DataFrame(data, columns=columns)
@@ -24,16 +22,16 @@ with h5py.File(HDF5_PATH, "r") as f:
 
 
 
-# Extracting features and the last column is features
-X = df.iloc[:, :-1].values 
-y = df.iloc[:, -1].values 
+# Extract features
+X = df.iloc[:, :-1].values
+y = df.iloc[:, -1].values
 
 # assign 10% test 90% train 0% val
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=0) 
 
 # Saving train and test
 with h5py.File(HDF5_PATH, "a") as f:
-
+ 
     if "segmented" not in f:
         segmented_group = f.create_group("segmented")
     else:
@@ -45,7 +43,7 @@ with h5py.File(HDF5_PATH, "a") as f:
             del segmented_group[name]
         segmented_group.create_dataset(name, data=dataset)
 
-# Defining Standard Scaler to normalize inputs
+# Define Standard Scaler to normalize inputs
 scaler = StandardScaler()
 
 # Defining classifier and pipeline
@@ -60,7 +58,7 @@ model_path = "Project/Project/trained_model.pkl"
 joblib.dump(clf, model_path)
 print(f"Model saved to {model_path}")
 
-# Getting predictions
+# Get predictions
 y_pred = clf.predict(X_test)
 y_probs = clf.predict_proba(X_test)[:, 1]  # Probabilities for the positive class (jumping)
 
