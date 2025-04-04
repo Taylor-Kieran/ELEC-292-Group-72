@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 # Moving Average Filter
-def moving_average(data, window_size=100):
+def moving_average(data, window_size=50):
     return np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
 # Function to process a dataset
@@ -18,7 +18,6 @@ def process_dataset(data):
     # Apply moving average filter to all columns except the first (time column)
     for col in df.columns[1:]:  # Skip time column (assuming column 0 is time)
         df[col] = moving_average(df[col])
-    
     return df
 
 # Function to process HDF5 file
